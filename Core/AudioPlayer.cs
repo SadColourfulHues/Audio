@@ -18,14 +18,7 @@ public partial class AudioPlayer: Node
     public uint MaxSoundPlayers = 32;
 
     [Export]
-    AudioLibrary _library = null;
-
-    [ExportSubgroup("Shared Properties")]
-    [Export(PropertyHint.Range, "0.0,3.0")]
-    private float _panningStrength = 1.0f;
-
-    [Export]
-    private float _maxDecibels3D = 3f;
+    protected AudioLibrary _library = null;
 
     [ExportGroup("Features")]
     [Export]
@@ -36,6 +29,28 @@ public partial class AudioPlayer: Node
 
     [Export]
     public bool Supports3D = false;
+
+    [ExportGroup("Shared Properties")]
+    [Export(PropertyHint.Range, "0.0,3.0")]
+    float _panningStrength = 1.0f;
+
+    [ExportSubgroup("2D")]
+
+    [Export(PropertyHint.ExpEasing)]
+    float _2dAttenuation = 1.0f;
+
+    [ExportSubgroup("3D")]
+    [Export]
+    AudioStreamPlayer3D.AttenuationModelEnum _3dAttenuationModel = AudioStreamPlayer3D.AttenuationModelEnum.InverseDistance;
+
+    [Export]
+    int _3dAttenuationCutoff = 5000;
+
+    [Export]
+    float _3dAttenuationFilterDb = -24f;
+
+    [Export]
+    float _3dMaxDecibels = 3f;
 
     ObjectPool<AudioStreamPlayer> _playersNonPositional = null;
     ObjectPool<AudioStreamPlayer2D> _players2D = null;
@@ -216,6 +231,7 @@ partial class AudioPlayer: IObjectPoolHandler<AudioStreamPlayer2D>
 {
     public void ObjectCreated(AudioStreamPlayer2D @object)
     {
+        @object.Attenuation = _2dAttenuation;
         @object.PanningStrength = _panningStrength;
         AddChild(@object);
     }
@@ -228,8 +244,12 @@ partial class AudioPlayer: IObjectPoolHandler<AudioStreamPlayer3D>
 {
     public void ObjectCreated(AudioStreamPlayer3D @object)
     {
-        @object.MaxDb = _maxDecibels3D;
+        @object.MaxDb = _3dMaxDecibels;
         @object.PanningStrength = _panningStrength;
+
+        @object.AttenuationModel = _3dAttenuationModel;
+        @object.AttenuationFilterCutoffHz = _3dAttenuationCutoff;
+        @object.AttenuationFilterDb = _3dAttenuationFilterDb;
 
         AddChild(@object);
     }
