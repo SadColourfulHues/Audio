@@ -19,6 +19,8 @@ public sealed partial class MusicItem: Resource
     public BgmTrack AsTrack()
         => new(this);
 
+    #if TOOLS
+
     // Note: To display item ID in the inspector
     public override void _ValidateProperty(Dictionary property)
     {
@@ -27,6 +29,8 @@ public sealed partial class MusicItem: Resource
 
         ResourceName = Id ?? "<no id>";
     }
+
+    #endif
 }
 
 public readonly struct BgmTrack

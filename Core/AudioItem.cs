@@ -39,6 +39,8 @@ public sealed partial class AudioItem: Resource
         return new SoundEffectMulti(this);
     }
 
+    #if TOOLS
+
     // Note: To display item ID in the inspector
     public override void _ValidateProperty(Dictionary property)
     {
@@ -47,4 +49,6 @@ public sealed partial class AudioItem: Resource
 
         ResourceName = Id ?? "<no id>";
     }
+
+    #endif
 }
