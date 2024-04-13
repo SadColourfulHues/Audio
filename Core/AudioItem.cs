@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 
 using System.Runtime.CompilerServices;
 
@@ -8,6 +9,7 @@ namespace SadChromaLib.Audio;
 /// A resource that contains relevant information for a sound effect
 /// </summary>
 [GlobalClass]
+[Tool]
 public sealed partial class AudioItem: Resource
 {
     [ExportGroup("Sound Effect Info")]
@@ -35,5 +37,14 @@ public sealed partial class AudioItem: Resource
         }
 
         return new SoundEffectMulti(this);
+    }
+
+    // Note: To display item ID in the inspector
+    public override void _ValidateProperty(Dictionary property)
+    {
+        if (!Engine.IsEditorHint())
+            return;
+
+        ResourceName = Id ?? "<no id>";
     }
 }

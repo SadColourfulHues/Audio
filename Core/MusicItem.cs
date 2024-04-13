@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 
 namespace SadChromaLib.Audio;
 
@@ -6,6 +7,7 @@ namespace SadChromaLib.Audio;
 /// A resource that contains relevant info about a BGM track
 /// </summary>
 [GlobalClass]
+[Tool]
 public sealed partial class MusicItem: Resource
 {
     [Export]
@@ -16,6 +18,15 @@ public sealed partial class MusicItem: Resource
 
     public BgmTrack AsTrack()
         => new(this);
+
+    // Note: To display item ID in the inspector
+    public override void _ValidateProperty(Dictionary property)
+    {
+        if (!Engine.IsEditorHint())
+            return;
+
+        ResourceName = Id ?? "<no id>";
+    }
 }
 
 public readonly struct BgmTrack
