@@ -2,6 +2,7 @@ using Godot;
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace SadChromaLib.Audio;
 
@@ -45,6 +46,12 @@ public sealed partial class MusicPlayer: Node
     [Export]
     float _trackTransitionTickThreshold = 0.5f;
 
+    [Export]
+    Tween.EaseType _crossfadeEase = Tween.EaseType.InOut;
+
+    [Export]
+    Tween.TransitionType _crossfadeTrans = Tween.TransitionType.Sine;
+
     Tween _fadeTween;
     AudioStreamPlayer _sourcePlayer;
     AudioStreamPlayer _fadePlayer;
@@ -70,10 +77,12 @@ public sealed partial class MusicPlayer: Node
         _bps = 0.0;
         _barBeats = 4;
 
+        #if TOOLS
         Debug.Assert(
             condition: _library is not null,
             message: "MusicPlayer: A music player needs a valid library resource to function correctly!"
         );
+        #endif
 
         _library.Initialise();
 
@@ -110,6 +119,42 @@ public sealed partial class MusicPlayer: Node
         }
 
         _targetBgmId = bgmId;
+    }
+
+    /// <summary>
+    /// Stops the current background track
+    /// </summary>
+    public void Stop()
+    {
+        if (_isFading || !_sourcePlayer.Playing)
+            return;
+
+        StartOrReuseTween();
+        _isFading = true;
+
+        _fadeTween
+            .TweenProperty(
+                @object: _sourcePlayer,
+                property: AudioStreamPlayer.PropertyName.VolumeDb.ToString(),
+                finalVal: AsDb(0.001f),
+                duration: _crossfadeDuration
+            )
+            .SetTrans(_crossfadeTrans)
+            .SetEase(_crossfadeEase);
+
+        // Reverts to its default state basically
+        _fadeTween.TweenCallback(Callable.From(() => {
+            _isFading = false;
+
+            _sourcePlayer.Stop();
+            _fadePlayer.Stop();
+
+            _sourcePlayer.Stream = null;
+            _fadePlayer.Stream = null;
+
+            _currentBgmId = null;
+            _targetBgmId = null;
+        }));
     }
 
     #endregion
@@ -159,6 +204,11 @@ public sealed partial class MusicPlayer: Node
 
     #region Utils
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private float AsDb(float volume)
+        // (fix) Infinitesimals does the intended behaviour when volume => 0
+        => Mathf.LinearToDb(Mathf.Max(0.001f, volume));
+
     private void SetStream(string id, AudioStreamPlayer player)
     {
         const double BpsFac = 1.0 / 60.0;
@@ -195,10 +245,19 @@ public sealed partial class MusicPlayer: Node
         }
     }
 
+    private void StartOrReuseTween()
+    {
+        if (IsInstanceValid(_fadeTween) && _fadeTween.IsRunning()) {
+            _fadeTween.Kill();
+        }
+
+        _fadeTween = CreateTween();
+    }
+
     private void TweenFadeCallback(float f)
     {
-        _fadePlayer.VolumeDb = Mathf.LinearToDb(1.0f - f);
-        _sourcePlayer.VolumeDb = Mathf.LinearToDb(f);
+        _fadePlayer.VolumeDb = AsDb(1.0f - f);
+        _sourcePlayer.VolumeDb = AsDb(f);
     }
 
     /// <summary>
@@ -220,22 +279,18 @@ public sealed partial class MusicPlayer: Node
         _fadePlayer.Seek(_sourcePlayer.GetPlaybackPosition());
 
         // Reset fade state
-        _fadePlayer.VolumeDb = Mathf.LinearToDb(1.0f);
-        _sourcePlayer.VolumeDb = Mathf.LinearToDb(0.0f);
+        _fadePlayer.VolumeDb = AsDb(1.0f);
+        _sourcePlayer.VolumeDb = AsDb(0.0f);
 
-        if (IsInstanceValid(_fadeTween) && _fadeTween.IsRunning()) {
-            _fadeTween.Kill();
-        }
-
-        _fadeTween = CreateTween();
+        StartOrReuseTween();
 
         _fadeTween
             .TweenMethod(
                 method: Callable.From((float fac) => TweenFadeCallback(fac)),
                 from: 0.0f, to: 1.0f,
                 duration: _crossfadeDuration)
-            .SetTrans(Tween.TransitionType.Cubic)
-            .SetEase(Tween.EaseType.In);
+            .SetTrans(_crossfadeTrans)
+            .SetEase(_crossfadeEase);
 
         _fadeTween.TweenCallback(Callable.From(FinaliseFade));
     }

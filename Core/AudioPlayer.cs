@@ -70,10 +70,12 @@ public partial class AudioPlayer: Node
             _players3D = new(MaxSoundPlayers, this);
         }
 
+        #if TOOLS
         Debug.Assert(
             condition: _library is not null,
             message: "AudioPlayer: An audio player needs a valid library resource to function correctly!"
         );
+        #endif
 
         _library.Initialise();
     }
