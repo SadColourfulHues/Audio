@@ -86,7 +86,7 @@ public sealed partial class MusicPlayer: Node
 
         _library.Initialise();
 
-        string busName = AudioUtils.AsBusName(AudioBus.Music);
+        string busName = AudioUtils.ToBusName(AudioBus.Music);
         _sourcePlayer = new() { Name = "Source", Bus = busName };
         _fadePlayer = new() { Name = "Fade", Bus = busName };
 
