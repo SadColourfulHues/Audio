@@ -104,8 +104,8 @@ public partial class AudioPlayer: Node
         player.Stream = sfx.GetStream();
         player.PitchScale = sfx.GetPitch(maxPitchShift);
 
-        player.VolumeDb = Mathf.LinearToDb(volume);
-        player.Bus = AudioBusUtils.ToBusName(bus);
+        player.VolumeDb = AudioUtils.AsDb(volume);
+        player.Bus = AudioUtils.ToBusName(bus);
 
         player.Play();
 
@@ -138,8 +138,8 @@ public partial class AudioPlayer: Node
         player.Stream = sfx.GetStream();
         player.PitchScale = sfx.GetPitch(maxPitchShift);
 
-        player.VolumeDb = Mathf.LinearToDb(volume);
-        player.Bus = AudioBusUtils.ToBusName(bus);
+        player.VolumeDb = AudioUtils.AsDb(volume);
+        player.Bus = AudioUtils.ToBusName(bus);
 
         player.MaxDistance = maxDistance;
         player.GlobalPosition = position;
@@ -177,8 +177,8 @@ public partial class AudioPlayer: Node
         player.Stream = sfx.GetStream();
         player.PitchScale = sfx.GetPitch(maxPitchShift);
 
-        player.VolumeDb = Mathf.LinearToDb(volume);
-        player.Bus = AudioBusUtils.ToBusName(bus);
+        player.VolumeDb = AudioUtils.AsDb(volume);
+        player.Bus = AudioUtils.ToBusName(bus);
 
         player.UnitSize = unitSize;
         player.MaxDistance = maxDistance;

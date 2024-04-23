@@ -86,7 +86,7 @@ public sealed partial class MusicPlayer: Node
 
         _library.Initialise();
 
-        string busName = AudioBusUtils.ToBusName(AudioBus.Music);
+        string busName = AudioUtils.AsBusName(AudioBus.Music);
         _sourcePlayer = new() { Name = "Source", Bus = busName };
         _fadePlayer = new() { Name = "Fade", Bus = busName };
 
@@ -136,7 +136,7 @@ public sealed partial class MusicPlayer: Node
             .TweenProperty(
                 @object: _sourcePlayer,
                 property: AudioStreamPlayer.PropertyName.VolumeDb.ToString(),
-                finalVal: AsDb(0.001f),
+                finalVal: AudioUtils.AsDb(0.001f),
                 duration: _crossfadeDuration
             )
             .SetTrans(_crossfadeTrans)
@@ -186,8 +186,8 @@ public sealed partial class MusicPlayer: Node
 
         double position = _sourcePlayer.GetPlaybackPosition();
 
-        int estimatedBeatIdx = Mathf.FloorToInt(position * _bps);
-        int estimatedBar = Mathf.FloorToInt((float) estimatedBeatIdx / _barBeats);
+        int estimatedBeatIdx = (int) Math.Floor(position * _bps);
+        int estimatedBar = (int) Math.Floor((float) estimatedBeatIdx / _barBeats);
 
         if (estimatedBeatIdx != _lastBeat) {
             OnBeatTick?.Invoke(estimatedBeatIdx % _barBeats, estimatedBeatIdx);
@@ -204,10 +204,21 @@ public sealed partial class MusicPlayer: Node
 
     #region Utils
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private float AsDb(float volume)
-        // (fix) Infinitesimals does the intended behaviour when volume => 0
-        => Mathf.LinearToDb(Mathf.Max(0.001f, volume));
+    /// <summary>
+    /// (no-checking) Returns the current beat index of the currently-playing track
+    /// </summary>
+    /// <returns></returns>
+    public float GetCurrentBeatIdx() {
+        return (int) Math.Floor(_sourcePlayer.GetPlaybackPosition() * _bps);
+    }
+
+    /// <summary>
+    /// (no-checking) Returns the current bar index of the currently-playing track
+    /// </summary>
+    /// <returns></returns>
+    public float GetCurrentBarIdx() {
+        return (int) Math.Floor(_sourcePlayer.GetPlaybackPosition() * _bps) / _barBeats;
+    }
 
     private void SetStream(string id, AudioStreamPlayer player)
     {
@@ -218,9 +229,6 @@ public sealed partial class MusicPlayer: Node
 
         player.Stream = track.Stream;
         player.Play();
-
-        if (!_watchForBeats)
-            return;
 
         _lastBar = 0;
         _lastBeat = 0;
@@ -256,8 +264,8 @@ public sealed partial class MusicPlayer: Node
 
     private void TweenFadeCallback(float f)
     {
-        _fadePlayer.VolumeDb = AsDb(1.0f - f);
-        _sourcePlayer.VolumeDb = AsDb(f);
+        _fadePlayer.VolumeDb = AudioUtils.AsDb(1.0f - f);
+        _sourcePlayer.VolumeDb = AudioUtils.AsDb(f);
     }
 
     /// <summary>
@@ -279,8 +287,8 @@ public sealed partial class MusicPlayer: Node
         _fadePlayer.Seek(_sourcePlayer.GetPlaybackPosition());
 
         // Reset fade state
-        _fadePlayer.VolumeDb = AsDb(1.0f);
-        _sourcePlayer.VolumeDb = AsDb(0.0f);
+        _fadePlayer.VolumeDb = AudioUtils.AsDb(1.0f);
+        _sourcePlayer.VolumeDb = AudioUtils.AsDb(0.0f);
 
         StartOrReuseTween();
 

@@ -9,18 +9,3 @@ public enum AudioBus: byte
     VoiceLines,
     Others
 }
-
-public static class AudioBusUtils
-{
-    public static string ToBusName(AudioBus bus)
-    {
-        return bus switch {
-            AudioBus.SoundEffects => "sfx",
-            AudioBus.Music => "bgm",
-            AudioBus.UI => "ui",
-            AudioBus.VoiceLines => "voices",
-            AudioBus.Others => "others",
-            _ => "Master"
-        };
-    }
-}
