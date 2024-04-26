@@ -2,7 +2,8 @@ using Godot;
 
 using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
+
+using SadChromaLib.Utils.Convenience;
 
 namespace SadChromaLib.Audio;
 
@@ -129,7 +130,7 @@ public sealed partial class MusicPlayer: Node
         if (_isFading || !_sourcePlayer.Playing)
             return;
 
-        StartOrReuseTween();
+        TweenUtils.Create(this, ref _fadeTween);
         _isFading = true;
 
         _fadeTween
@@ -253,15 +254,6 @@ public sealed partial class MusicPlayer: Node
         }
     }
 
-    private void StartOrReuseTween()
-    {
-        if (IsInstanceValid(_fadeTween) && _fadeTween.IsRunning()) {
-            _fadeTween.Kill();
-        }
-
-        _fadeTween = CreateTween();
-    }
-
     private void TweenFadeCallback(float f)
     {
         _fadePlayer.VolumeDb = AudioUtils.AsDb(1.0f - f);
@@ -290,7 +282,7 @@ public sealed partial class MusicPlayer: Node
         _fadePlayer.VolumeDb = AudioUtils.AsDb(1.0f);
         _sourcePlayer.VolumeDb = AudioUtils.AsDb(0.0f);
 
-        StartOrReuseTween();
+        TweenUtils.Create(this, ref _fadeTween);
 
         _fadeTween
             .TweenMethod(
