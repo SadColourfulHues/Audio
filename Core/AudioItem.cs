@@ -9,7 +9,9 @@ namespace SadChromaLib.Audio;
 /// A resource that contains relevant information for a sound effect
 /// </summary>
 [GlobalClass]
+#if TOOLS
 [Tool]
+#endif
 public sealed partial class AudioItem: Resource
 {
     [ExportGroup("Sound Effect Info")]
@@ -40,7 +42,6 @@ public sealed partial class AudioItem: Resource
     }
 
     #if TOOLS
-
     // Note: To display item ID in the inspector
     public override void _ValidateProperty(Dictionary property)
     {
@@ -48,7 +49,7 @@ public sealed partial class AudioItem: Resource
             return;
 
         ResourceName = Id ?? "<no id>";
+        EmitChanged();
     }
-
     #endif
 }

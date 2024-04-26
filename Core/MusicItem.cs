@@ -7,7 +7,9 @@ namespace SadChromaLib.Audio;
 /// A resource that contains relevant info about a BGM track
 /// </summary>
 [GlobalClass]
+#if TOOLS
 [Tool]
+#endif
 public sealed partial class MusicItem: Resource
 {
     [Export]
@@ -20,7 +22,6 @@ public sealed partial class MusicItem: Resource
         => new(this);
 
     #if TOOLS
-
     // Note: To display item ID in the inspector
     public override void _ValidateProperty(Dictionary property)
     {
@@ -28,8 +29,8 @@ public sealed partial class MusicItem: Resource
             return;
 
         ResourceName = Id ?? "<no id>";
+        EmitChanged();
     }
-
     #endif
 }
 
