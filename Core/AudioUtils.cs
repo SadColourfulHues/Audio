@@ -38,5 +38,5 @@ public static class AudioUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float AsDb(float volume)
         // (fix) Infinitesimals does the intended behaviour when volume == 0
-        => MathF.Log(MathF.Max(0.001f, volume)) * 8.6858896380650365530225783783321f;
+        => MathF.Log(MathF.Max(0.0001f, volume)) * 8.6858896380650365530225783783321f;
 }

@@ -35,19 +35,24 @@ public partial class AudioPlayer: Node
     float _panningStrength = 1.0f;
 
     [ExportSubgroup("2D")]
+    [Export]
+    float _base2DMaxDistance = 1000f;
 
     [Export(PropertyHint.ExpEasing)]
     float _2dAttenuation = 1.0f;
 
     [ExportSubgroup("3D")]
     [Export]
-    AudioStreamPlayer3D.AttenuationModelEnum _3dAttenuationModel = AudioStreamPlayer3D.AttenuationModelEnum.InverseDistance;
+    float _base3DMaxDistance = 8f;
 
     [Export]
-    int _3dAttenuationCutoff = 5000;
+    AudioStreamPlayer3D.AttenuationModelEnum _3dAttenuationModel = AudioStreamPlayer3D.AttenuationModelEnum.Logarithmic;
 
     [Export]
-    float _3dAttenuationFilterDb = -24f;
+    int _3dAttenuationCutoffHz = 20500;
+
+    [Export]
+    float _3dAttenuationFilterDb = -80f;
 
     [Export]
     float _3dMaxDecibels = 3f;
@@ -117,7 +122,7 @@ public partial class AudioPlayer: Node
     /// </summary>
     /// <param name="soundId">The sound effect's ID (in the audio library)</param>
     /// <param name="position">A point in 2D space from where the sound effect should play.</param>
-    /// <param name="maxDistance">The maximum distance where the sound effect is still hearable.</param>
+    /// <param name="maxDistanceMod">Max distance multiplier. (Setting it to higher values means it can be heard from farther distances.)</param>
     /// <param name="volume">Volume (from 0.0 -> ...)</param>
     /// <param name="maxPitchShift">The maximum amount of pitch shifting allowed (preferrably 0.0...1.0)</param>
     public bool Play(string soundId,
@@ -125,7 +130,7 @@ public partial class AudioPlayer: Node
                     float volume = 1.0f,
                     float maxPitchShift = 0.0f,
                     AudioBus bus = AudioBus.UI,
-                    float maxDistance = 256.0f)
+                    float maxDistanceMod = 1.0f)
     {
         AudioStreamPlayer2D player = _players2D?.Get();
 
@@ -141,7 +146,7 @@ public partial class AudioPlayer: Node
         player.VolumeDb = AudioUtils.AsDb(volume);
         player.Bus = AudioUtils.ToBusName(bus);
 
-        player.MaxDistance = maxDistance;
+        player.MaxDistance = _base2DMaxDistance * maxDistanceMod;
         player.GlobalPosition = position;
 
         player.Play();
@@ -154,17 +159,17 @@ public partial class AudioPlayer: Node
     /// </summary>
     /// <param name="soundId">The sound effect's ID (in the audio library)</param>
     /// <param name="position">A point in 2D space from where the sound effect should play.</param>
-    /// <param name="maxDistance">The maximum distance where the sound effect is still hearable.</param>
-    /// <param name="unitSize">Higher values will make the sound be able to reach greater distances.</param>
     /// <param name="volume">Volume (from 0.0 -> ...)</param>
     /// <param name="maxPitchShift">The maximum amount of pitch shifting allowed (preferrably 0.0...1.0)</param>
+    /// <param name="unitSize">Higher values will make the sound be able to reach greater distances.</param>
+    /// <param name="maxDistanceMod">Max distance multiplier. (Setting it to higher values means it can be heard from farther distances.)</param>
     public bool Play(string soundId,
                     Vector3 position,
                     float volume = 1.0f,
                     float maxPitchShift = 0.0f,
                     AudioBus bus = AudioBus.UI,
-                    float maxDistance = 256.0f,
-                    float unitSize = 10.0f)
+                    float unitSize = 10.0f,
+                    float maxDistanceMod = 1.0f)
     {
         AudioStreamPlayer3D player = _players3D?.Get();
 
@@ -181,7 +186,7 @@ public partial class AudioPlayer: Node
         player.Bus = AudioUtils.ToBusName(bus);
 
         player.UnitSize = unitSize;
-        player.MaxDistance = maxDistance;
+        player.MaxDistance = _base3DMaxDistance * maxDistanceMod;
         player.GlobalPosition = position;
 
         player.Play();
@@ -250,7 +255,7 @@ partial class AudioPlayer: IObjectPoolHandler<AudioStreamPlayer3D>
         @object.PanningStrength = _panningStrength;
 
         @object.AttenuationModel = _3dAttenuationModel;
-        @object.AttenuationFilterCutoffHz = _3dAttenuationCutoff;
+        @object.AttenuationFilterCutoffHz = _3dAttenuationCutoffHz;
         @object.AttenuationFilterDb = _3dAttenuationFilterDb;
 
         AddChild(@object);
