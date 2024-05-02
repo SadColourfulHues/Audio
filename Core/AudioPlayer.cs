@@ -129,7 +129,7 @@ public partial class AudioPlayer: Node
                     Vector2 position,
                     float volume = 1.0f,
                     float maxPitchShift = 0.0f,
-                    AudioBus bus = AudioBus.UI,
+                    AudioBus bus = AudioBus.SoundEffects,
                     float maxDistanceMod = 1.0f)
     {
         AudioStreamPlayer2D player = _players2D?.Get();
@@ -167,7 +167,7 @@ public partial class AudioPlayer: Node
                     Vector3 position,
                     float volume = 1.0f,
                     float maxPitchShift = 0.0f,
-                    AudioBus bus = AudioBus.UI,
+                    AudioBus bus = AudioBus.SoundEffects,
                     float unitSize = 10.0f,
                     float maxDistanceMod = 1.0f)
     {
